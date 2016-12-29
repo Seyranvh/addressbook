@@ -4,6 +4,7 @@ import com.svh.addressbook.application.Application;
 import com.svh.addressbook.console.ConsolePrinter;
 import com.svh.addressbook.contact.Contact;
 import com.svh.addressbook.registry.Registry;
+import com.svh.addressbook.remoteregistry.RemoteRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 public class ListCommand implements Command {
 
     private Registry registry;
+    private RemoteRegistry remoteRegistry;
     private ConsolePrinter consolePrinter;
 
     public ListCommand() {
@@ -21,6 +23,7 @@ public class ListCommand implements Command {
 
     public ListCommand(Application app, ConsolePrinter cp) {
         this.registry = app.getRegistry();
+        this.remoteRegistry = app.getRemoteRegistry();
         this.consolePrinter = cp;
     }
 
@@ -37,8 +40,11 @@ public class ListCommand implements Command {
 
     @Override
     public void execute() {
-        List<Contact> contacts = this.registry.getContacts();
-        List<Contact> copiedList = (ArrayList) ((ArrayList) contacts).clone();
+        List<Contact> allContacts = new ArrayList<>();
+        allContacts.addAll(this.registry.getContacts());
+        allContacts.addAll(this.remoteRegistry.getRemoteContacts());
+
+        List<Contact> copiedList = (ArrayList) ((ArrayList) allContacts).clone();
         List<Contact> sortedList = ContactListSorter.sort(copiedList);
         for (Contact contact : sortedList) {
             consolePrinter.print(ContactFormater.format(contact));

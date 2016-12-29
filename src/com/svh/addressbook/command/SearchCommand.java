@@ -4,6 +4,7 @@ import com.svh.addressbook.application.Application;
 import com.svh.addressbook.console.ConsolePrinter;
 import com.svh.addressbook.contact.Contact;
 import com.svh.addressbook.registry.Registry;
+import com.svh.addressbook.remoteregistry.RemoteRegistry;
 
 import java.util.List;
 
@@ -15,12 +16,14 @@ public class SearchCommand implements Command {
     private ConsolePrinter consolePrinter;
     private List<String> parameters;
     private Registry registry;
+    private RemoteRegistry remoteRegistry;
 
     public SearchCommand() {
     }
 
     public SearchCommand(Application app, ConsolePrinter cp, List<String> params) {
         this.registry = app.getRegistry();
+        this.remoteRegistry = app.getRemoteRegistry();
         this.consolePrinter = cp;
         this.parameters = params;
     }
@@ -39,6 +42,7 @@ public class SearchCommand implements Command {
     public void execute() {
         if (validate()) {
             List<Contact> found = this.registry.search(parameters.get(0));
+            found.addAll(this.remoteRegistry.search(parameters.get(0)));
             if (found.isEmpty()) {
                 consolePrinter.print(parameters.get(0) + " was not found.");
             } else {

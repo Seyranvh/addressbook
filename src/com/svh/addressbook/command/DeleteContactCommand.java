@@ -2,7 +2,9 @@ package com.svh.addressbook.command;
 
 import com.svh.addressbook.application.Application;
 import com.svh.addressbook.console.ConsolePrinter;
+import com.svh.addressbook.contact.Contact;
 import com.svh.addressbook.registry.Registry;
+import com.svh.addressbook.remoteregistry.RemoteRegistry;
 
 import java.util.List;
 
@@ -12,6 +14,7 @@ import java.util.List;
 public class DeleteContactCommand implements Command {
 
     private Registry registry;
+    private RemoteRegistry remoteRegistry;
     private ConsolePrinter consolePrinter;
     private List<String> parameters;
 
@@ -20,6 +23,7 @@ public class DeleteContactCommand implements Command {
 
     public DeleteContactCommand(Application app, ConsolePrinter cp, List<String> params) {
         this.registry = app.getRegistry();
+        this.remoteRegistry = app.getRemoteRegistry();
         this.consolePrinter = cp;
         this.parameters = params;
     }
@@ -40,8 +44,20 @@ public class DeleteContactCommand implements Command {
             boolean isDeleted = this.registry.deleteContact(parameters.get(0));
             if (isDeleted) {
                 consolePrinter.print("The contact has been deleted.");
-            } else {
-                consolePrinter.print("The contact was not deleted. The contact does not exist.");
+            }
+            if (!isDeleted) {
+                boolean found = false;
+                for (Contact contact : this.remoteRegistry.getRemoteContacts()) {
+                    if (contact.getId().equals(parameters.get(0))) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    consolePrinter.print("Central contact can not be deleted.");
+                } else {
+                    consolePrinter.print("The contact was not deleted. The contact does not exist.");
+                }
             }
         }
     }
